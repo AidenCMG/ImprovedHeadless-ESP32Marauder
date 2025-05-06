@@ -14,8 +14,6 @@ void EvilPortal::setup() {
 
   html_files = new LinkedList<String>();
 
-  html_files->add("Back");
-
   #ifdef HAS_SD
     if (sd_obj.supported) {
       sd_obj.listDirToLinkedList(html_files, "/", "html");
@@ -51,6 +49,10 @@ void EvilPortal::setupServer() {
     #ifdef HAS_SCREEN
       this->sendToDisplay("Client connected to server");
     #endif
+  });
+
+  server.on("/get-ap-name", HTTP_GET, [this](AsyncWebServerRequest *request) {
+    request->send(200, "text/plain", WiFi.softAPSSID());
   });
 
   server.on("/get", HTTP_GET, [this](AsyncWebServerRequest *request) {
