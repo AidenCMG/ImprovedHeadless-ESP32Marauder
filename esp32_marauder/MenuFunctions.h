@@ -74,6 +74,8 @@ extern Settings settings_obj;
 #define DISABLE_TOUCH 34
 #define FLIPPER 35
 #define BLANK 36
+#define PINESCAN_SNIFF 37 // Use blanks icon
+#define MULTISSID_SNIFF 37 // Use blanks icon
 
 PROGMEM void my_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p);
 PROGMEM bool my_touchpad_read(lv_indev_drv_t * indev_driver, lv_indev_data_t * data);
@@ -170,9 +172,9 @@ class MenuFunctions
     #ifdef HAS_BT
       Menu airtagMenu;
     #endif
-    #ifndef HAS_ILI9341
+    //#ifndef HAS_ILI9341
       Menu wifiStationMenu;
-    #endif
+    //#endif
 
     // WiFi General Menu
     Menu htmlMenu;
@@ -193,7 +195,7 @@ class MenuFunctions
 
     // Menu icons
 
-
+    void displayMenuButtons();
     uint16_t getColor(uint16_t color);
     void drawAvgLine(int16_t value);
     void drawMaxLine(int16_t value, uint16_t color);
