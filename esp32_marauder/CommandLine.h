@@ -54,13 +54,17 @@ const char PROGMEM NMEA_CMD[] = "nmea";
 
 // WiFi sniff/scan
 const char PROGMEM EVIL_PORTAL_CMD[] = "evilportal";
+const char PROGMEM PACKET_COUNT_CMD[] = "packetcount";
 const char PROGMEM SIGSTREN_CMD[] = "sigmon";
+const char PROGMEM SCAN_ALL_CMD[] = "scanall";
 const char PROGMEM SCANAP_CMD[] = "scanap";
 const char PROGMEM SCANSTA_CMD[] = "scansta";
 const char PROGMEM SNIFF_RAW_CMD[] = "sniffraw";
 const char PROGMEM SNIFF_BEACON_CMD[] = "sniffbeacon";
 const char PROGMEM SNIFF_PROBE_CMD[] = "sniffprobe";
 const char PROGMEM SNIFF_PWN_CMD[] = "sniffpwn";
+const char PROGMEM SNIFF_PINESCAN_CMD[] = "sniffpinescan";
+const char PROGMEM SNIFF_MULTISSID_CMD[] = "sniffmultissid";
 const char PROGMEM SNIFF_ESP_CMD[] = "sniffesp";
 const char PROGMEM SNIFF_DEAUTH_CMD[] = "sniffdeauth";
 const char PROGMEM SNIFF_PMKID_CMD[] = "sniffpmkid";
@@ -76,6 +80,7 @@ const char PROGMEM ATTACK_TYPE_RR[] = "rickroll";
 
 // WiFi Aux
 const char PROGMEM LIST_AP_CMD[] = "list";
+const char PROGMEM INFO_CMD[] = "info";
 const char PROGMEM SEL_CMD[] = "select";
 const char PROGMEM SSID_CMD[] = "ssid";
 const char PROGMEM SAVE_CMD[] = "save";
@@ -109,13 +114,17 @@ const char PROGMEM HELP_NMEA_CMD[] = "nmea";
 
 // WiFi sniff/scan
 const char PROGMEM HELP_EVIL_PORTAL_CMD[] = "evilportal [-c start [-w html.html]/sethtml <html.html>]";
+const char PROGMEM HELP_PACKET_COUNT_CMD[] = "packetcount";
 const char PROGMEM HELP_SIGSTREN_CMD[] = "sigmon";
+const char PROGMEM HELP_SCAN_ALL_CMD[] = "scanall";
 const char PROGMEM HELP_SCANAP_CMD[] = "scanap";
 const char PROGMEM HELP_SCANSTA_CMD[] = "scansta";
 const char PROGMEM HELP_SNIFF_RAW_CMD[] = "sniffraw";
 const char PROGMEM HELP_SNIFF_BEACON_CMD[] = "sniffbeacon";
 const char PROGMEM HELP_SNIFF_PROBE_CMD[] = "sniffprobe";
 const char PROGMEM HELP_SNIFF_PWN_CMD[] = "sniffpwn";
+const char PROGMEM HELP_SNIFF_PINESCAN_CMD[] = "sniffpinescan";
+const char PROGMEM HELP_SNIFF_MULTISSID_CMD[] = "sniffmultissid";
 const char PROGMEM HELP_SNIFF_ESP_CMD[] = "sniffesp";
 const char PROGMEM HELP_SNIFF_DEAUTH_CMD[] = "sniffdeauth";
 const char PROGMEM HELP_SNIFF_PMKID_CMD[] = "sniffpmkid [-c <channel>][-d][-l]";
@@ -130,6 +139,7 @@ const char PROGMEM HELP_LIST_AP_CMD_A[] = "list -s";
 const char PROGMEM HELP_LIST_AP_CMD_B[] = "list -a";
 const char PROGMEM HELP_LIST_AP_CMD_C[] = "list -c";
 const char PROGMEM HELP_LIST_AP_CMD_D[] = "list -t";
+const char PROGMEM HELP_INFO_CMD[] = "info [-a <index>]";
 const char PROGMEM HELP_SEL_CMD_A[] = "select -a/-s/-c <index (comma separated)>/-f \"equals <String> or contains <String>\"";
 const char PROGMEM HELP_SSID_CMD_A[] = "ssid -a [-g <count>/-n <name>]";
 const char PROGMEM HELP_SSID_CMD_B[] = "ssid -r <index>";

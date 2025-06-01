@@ -220,13 +220,17 @@ void CommandLine::runCommand(String input) {
     
     // WiFi sniff/scan
     Serial.println(HELP_EVIL_PORTAL_CMD);
+    Serial.println(HELP_PACKET_COUNT_CMD);
     Serial.println(HELP_SIGSTREN_CMD);
+    Serial.println(HELP_SCAN_ALL_CMD);
     Serial.println(HELP_SCANAP_CMD);
     Serial.println(HELP_SCANSTA_CMD);
     Serial.println(HELP_SNIFF_RAW_CMD);
     Serial.println(HELP_SNIFF_BEACON_CMD);
     Serial.println(HELP_SNIFF_PROBE_CMD);
     Serial.println(HELP_SNIFF_PWN_CMD);
+    Serial.println(HELP_SNIFF_PINESCAN_CMD);
+    Serial.println(HELP_SNIFF_MULTISSID_CMD);
     Serial.println(HELP_SNIFF_ESP_CMD);
     Serial.println(HELP_SNIFF_DEAUTH_CMD);
     Serial.println(HELP_SNIFF_PMKID_CMD);
@@ -239,6 +243,7 @@ void CommandLine::runCommand(String input) {
     Serial.println(HELP_ATTACK_CMD);
     
     // WiFi Aux
+    Serial.println(HELP_INFO_CMD);
     Serial.println(HELP_LIST_AP_CMD_A);
     Serial.println(HELP_LIST_AP_CMD_B);
     Serial.println(HELP_LIST_AP_CMD_C);
@@ -520,6 +525,16 @@ void CommandLine::runCommand(String input) {
         menu_function_obj.drawStatusBar();
       #endif
       wifi_scan_obj.StartScan(WIFI_SCAN_SIG_STREN, TFT_MAGENTA);
+      wifi_scan_obj.renderPacketRate();
+    }
+    // Packet count
+    else if (cmd_args.get(0) == PACKET_COUNT_CMD) {
+      Serial.println("Starting Packet Count Scan. Stop with " + (String)STOPSCAN_CMD);
+      #ifdef HAS_SCREEN
+        display_obj.clearScreen();
+        menu_function_obj.drawStatusBar();
+      #endif
+      wifi_scan_obj.StartScan(WIFI_SCAN_PACKET_RATE, TFT_ORANGE);
     }
     // Wardrive
     else if (cmd_args.get(0) == WARDRIVE_CMD) {
@@ -593,6 +608,10 @@ void CommandLine::runCommand(String input) {
         }
       }
     }
+    else if (cmd_args.get(0) == SCAN_ALL_CMD) {
+      Serial.println("Scanning for APs and Stations. Stop with " + (String)STOPSCAN_CMD);
+      wifi_scan_obj.StartScan(WIFI_SCAN_AP_STA, TFT_MAGENTA);
+    }
     else if (cmd_args.get(0) == SCANAP_CMD) {
       int full_sw = -1;
       #ifdef HAS_SCREEN
@@ -665,6 +684,24 @@ void CommandLine::runCommand(String input) {
         menu_function_obj.drawStatusBar();
       #endif
       wifi_scan_obj.StartScan(WIFI_SCAN_PWN, TFT_MAGENTA);
+    }
+    // PineScan sniff
+    else if (cmd_args.get(0) == SNIFF_PINESCAN_CMD) {
+      Serial.println("Starting Pinescan sniff. Stop with " + (String)STOPSCAN_CMD);
+      #ifdef HAS_SCREEN
+        display_obj.clearScreen();
+        menu_function_obj.drawStatusBar();
+      #endif
+      wifi_scan_obj.StartScan(WIFI_SCAN_PINESCAN, TFT_MAGENTA);
+    }
+    // MultiSSID sniff
+    else if (cmd_args.get(0) == SNIFF_MULTISSID_CMD) {
+      Serial.println("Starting MultiSSID sniff. Stop with " + (String)STOPSCAN_CMD);
+      #ifdef HAS_SCREEN
+        display_obj.clearScreen();
+        menu_function_obj.drawStatusBar();
+      #endif
+      wifi_scan_obj.StartScan(WIFI_SCAN_MULTISSID, TFT_MAGENTA);
     }
     // Espressif sniff
     else if (cmd_args.get(0) == SNIFF_ESP_CMD) {
@@ -1189,6 +1226,21 @@ void CommandLine::runCommand(String input) {
       return;
     }
   }
+  else if (cmd_args.get(0) == INFO_CMD) {
+    int ap_sw = this->argSearch(&cmd_args, "-a");
+
+    if (ap_sw != -1) {
+      int filter_ap = cmd_args.get(ap_sw + 1).toInt();
+      wifi_scan_obj.RunAPInfo(filter_ap, false);
+    }
+    else {
+      wifi_scan_obj.currentScanMode = SHOW_INFO;
+      #ifdef HAS_SCREEN
+        menu_function_obj.changeMenu(&menu_function_obj.infoMenu);
+      #endif
+      wifi_scan_obj.RunInfo();
+    }
+  }
   // Select access points or stations
   else if (cmd_args.get(0) == SEL_CMD) {
     // Get switches
@@ -1313,26 +1365,43 @@ void CommandLine::runCommand(String input) {
       // Get list of indices
       LinkedList<String> ss_index = this->parseCommand(cmd_args.get(ss_sw + 1), ",");
 
-      // Mark APs as selected
-      for (int i = 0; i < ss_index.size(); i++) {
-        int index = ss_index.get(i).toInt();
-        if (!this->inRange(ssids->size(), index)) {
-          Serial.println("Index not in range: " + (String)index);
-          continue;
+      // Select ALL SSIDs
+      if (cmd_args.get(ss_sw + 1) == "all") {
+        for (int i = 0; i < ssids->size(); i++) {
+          if (ssids->get(i).selected) {
+            ssid new_ssid = ssids->get(i);
+            new_ssid.selected = false;
+            ssids->set(i, new_ssid);
+            count_unselected += 1;
+          }
+          else {
+            ssid new_ssid = ssids->get(i);
+            new_ssid.selected = true;
+            ssids->set(i, new_ssid);
+            count_selected += 1;
+          }
         }
-        if (ssids->get(index).selected) {
-          // Unselect "selected" ap
-          ssid new_ssid = ssids->get(index);
-          new_ssid.selected = false;
-          ssids->set(index, new_ssid);
-          count_unselected += 1;
-        }
-        else {
-          // Select "unselected" ap
-          ssid new_ssid = ssids->get(index);
-          new_ssid.selected = true;
-          ssids->set(index, new_ssid);
-          count_selected += 1;
+      }
+      else {
+      // Mark SSIDs as selected
+        for (int i = 0; i < ss_index.size(); i++) {
+          int index = ss_index.get(i).toInt();
+          if (!this->inRange(ssids->size(), index)) {
+            Serial.println("Index not in range: " + (String)index);
+            continue;
+          }
+          if (ssids->get(index).selected) {
+            ssid new_ssid = ssids->get(index);
+            new_ssid.selected = false;
+            ssids->set(index, new_ssid);
+            count_unselected += 1;
+          }
+          else {
+            ssid new_ssid = ssids->get(index);
+            new_ssid.selected = true;
+            ssids->set(index, new_ssid);
+            count_selected += 1;
+          }
         }
       }
       this->showCounts(count_selected, count_unselected);

@@ -19,6 +19,10 @@
 
 #include <TFT_eSPI.h>
 
+#ifdef HAS_CYD_TOUCH
+  #include <XPT2046_Touchscreen.h>
+#endif
+
 // WiFi stuff
 #define OTA_UPDATE 100
 #define SHOW_INFO 101
@@ -45,6 +49,10 @@
 #define MAGENTA_KEY ";mgn;"
 #define WHITE_KEY ";wht;"
 
+#define UP_BUTTON     0
+#define SELECT_BUTTON 1
+#define DOWN_BUTTON   2
+
 class Display
 {
   private:
@@ -69,8 +77,13 @@ class Display
   public:
     Display();
     TFT_eSPI tft = TFT_eSPI();
-    TFT_eSPI_Button key[BUTTON_ARRAY_LEN];
+    TFT_eSPI_Button key[BUTTON_ARRAY_LEN + 3];
     const String PROGMEM version_number = MARAUDER_VERSION;
+
+    #ifdef HAS_CYD_TOUCH
+      SPIClass touchscreenSPI;
+      XPT2046_Touchscreen touchscreen;
+    #endif
 
     bool printing = false;
     bool loading = false;
@@ -105,6 +118,8 @@ class Display
     // We can speed up scrolling of short text lines by just blanking the character we drew
     int blank[19]; // We keep all the strings pixel lengths to optimise the speed of the top line blanking
 
+    int8_t menuButton(uint16_t *x, uint16_t *y, bool pressed);
+    uint8_t updateTouch(uint16_t *x, uint16_t *y, uint16_t threshold = 600);
     void tftDrawRedOnOffButton();
     void tftDrawGreenOnOffButton();
     void tftDrawGraphObjects(byte x_scale);
@@ -112,8 +127,8 @@ class Display
     void tftDrawColorKey();
     void tftDrawXScaleButtons(byte x_scale);
     void tftDrawYScaleButtons(byte y_scale);
-    void tftDrawChannelScaleButtons(int set_channel);
-    void tftDrawExitScaleButtons();
+    void tftDrawChannelScaleButtons(int set_channel, bool lnd_an = true);
+    void tftDrawExitScaleButtons(bool lnd_an = true);
     void buildBanner(String msg, int xpos);
     void clearScreen();
     void displayBuffer(bool do_clear = false);
