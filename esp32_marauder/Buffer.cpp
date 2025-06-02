@@ -1,42 +1,39 @@
 #include "Buffer.h"
-#include "lang_var.h"
 #include "Encoder.h"
+#include "lang_var.h"
 
-
-
-//constructor
 Buffer::Buffer(){
   bufA = (uint8_t*)malloc(BUF_SIZE);
   bufB = (uint8_t*)malloc(BUF_SIZE);
 }
 
-// takes in name of file and a true or false
 void Buffer::createFile(String name, bool is_pcap){
   int i=0;
   if (is_pcap) {
-    // names the pcap file
     do{
       fileName = "/"+name+"_"+(String)i+".pcap";
       i++;
-    } while(fs->exists(fileName));
+    } while(fs->exists(fileName));  
   }
   else {
     do{
       fileName = "/"+name+"_"+(String)i+".log";
       i++;
-    } while(fs->exists(fileName)); // fs is file system abstraction
+    } while(fs->exists(fileName));
   }
 
   Serial.println(fileName);
-  // opens file to write data
+  
   file = fs->open(fileName, FILE_WRITE);
   file.close();
 }
 
-// prepares buffer to write data 
 void Buffer::open(bool is_pcap){
   bufSizeA = 0;
   bufSizeB = 0;
+
+  bufSizeB = 0;
+
   writing = true;
 
   if (is_pcap) {
@@ -49,9 +46,8 @@ void Buffer::open(bool is_pcap){
     write(uint32_t(105)); // data link type
   }
 }
- 
+
 void Buffer::openFile(String file_name, fs::FS* fs, bool serial, bool is_pcap) {
-  //checks if pcap saving is enabled in settings
   bool save_pcap = settings_obj.loadSetting<bool>("SavePCAP");
   if (!save_pcap) {
     this->fs = NULL;
@@ -59,15 +55,11 @@ void Buffer::openFile(String file_name, fs::FS* fs, bool serial, bool is_pcap) {
     writing = false;
     return;
   }
-  // sets provided fs (filesystem object pointer) to internal fs
   this->fs = fs;
-  // sets serial to true
   this->serial = serial;
-  // makes sure fs isn't null
   if (this->fs) {
     createFile(file_name, is_pcap);
   }
-  // call open() method if has filesystem or serial is true
   if (this->fs || this->serial) {
     open(is_pcap);
   } else {
@@ -75,16 +67,14 @@ void Buffer::openFile(String file_name, fs::FS* fs, bool serial, bool is_pcap) {
   }
 }
 
-// wrapper for openFile
 void Buffer::pcapOpen(String file_name, fs::FS* fs, bool serial) {
-  openFile(file_name, fs, serial, true); 
+  openFile(file_name, fs, serial, true);
 }
 
 void Buffer::logOpen(String file_name, fs::FS* fs, bool serial) {
   openFile(file_name, fs, serial, false);
 }
 
-// Buffer management
 void Buffer::add(const uint8_t* buf, uint32_t len, bool is_pcap){
   // buffer is full -> drop packet
   if((useA && bufSizeA + len >= BUF_SIZE && bufSizeB > 0) || (!useA && bufSizeB + len >= BUF_SIZE && bufSizeA > 0)){
@@ -100,7 +90,7 @@ void Buffer::add(const uint8_t* buf, uint32_t len, bool is_pcap){
     useA = true;
     //Serial.println("\nswitched to buffer A");
   }
-// timestamps the packet
+
   uint32_t microSeconds = micros(); // e.g. 45200400 => 45s 200ms 400us
   uint32_t seconds = (microSeconds/1000)/1000; // e.g. 45200400/1000/1000 = 45200 / 1000 = 45s
 
@@ -155,7 +145,6 @@ void Buffer::write(uint16_t n){
   write(buf,2);
 }
 
-
 void Buffer::write(const uint8_t* buf, uint32_t len){
   if(!writing) return;
   while(saving) delay(10);
@@ -195,21 +184,20 @@ void Buffer::saveFs(){
   file.close();
 }
 
-
 void Buffer::saveSerial() {
   // Saves to main console UART, user-facing app will ignore these markers
   // Uses / and ] in markers as they are illegal characters for SSIDs
-  const char* mark_begin = "[BUF/BEGIN]";
-  const size_t mark_begin_len = strlen(mark_begin);
-  const char* mark_close = "[BUF/CLOSE]";
-  const size_t mark_close_len = strlen(mark_close);
+  //const char* mark_begin = "[BUF/BEGIN]";
+  //const size_t mark_begin_len = strlen(mark_begin);
+  //const char* mark_close = "[BUF/CLOSE]";
+  //const size_t mark_close_len = strlen(mark_close);
 
   // Additional buffer and memcpy's so that a single Serial.write() is called
   // This is necessary so that other console output isn't mixed into buffer stream
-  uint8_t* buf = (uint8_t*)malloc(mark_begin_len + bufSizeA + bufSizeB + mark_close_len);
+  uint8_t* buf = (uint8_t*)malloc(/*mark_begin_len*/ + bufSizeA + bufSizeB /*+ mark_close_len*/);
   uint8_t* it = buf;
-  memcpy(it, mark_begin, mark_begin_len);
-  it += mark_begin_len;
+  //memcpy(it, mark_begin, mark_begin_len);
+  //it += mark_begin_len;
   // choosing which buffer to use
   if(useA){
     if(bufSizeB > 0){
@@ -231,11 +219,13 @@ void Buffer::saveSerial() {
     }
   }
 
-  memcpy(it, mark_close, mark_close_len);
-  it += mark_close_len;
+  //memcpy(it, mark_close, mark_close_len);
+  //it += mark_close_len;
 
   Encoder* encoder_obj = new Encoder(buf, it - buf);
+  //Serial.println("[BUF/BEGIN]");
   encoder_obj->printEncodedData();
+  //Serial.println("[BUF/END]");
   delete encoder_obj;
   //Serial.write(buf, it - buf);
   free(buf);
