@@ -68,7 +68,7 @@ const char PROGMEM SNIFF_MULTISSID_CMD[] = "sniffmultissid";
 const char PROGMEM SNIFF_ESP_CMD[] = "sniffesp";
 const char PROGMEM SNIFF_DEAUTH_CMD[] = "sniffdeauth";
 const char PROGMEM SNIFF_PMKID_CMD[] = "sniffpmkid";
-const char PROGMEM STOPSCAN_CMD[] = "stopscan";
+const char PROGMEM STOPSCAN_CMD[] = "s";
 const char PROGMEM WARDRIVE_CMD[] = "wardrive";
 
 // WiFi attack
