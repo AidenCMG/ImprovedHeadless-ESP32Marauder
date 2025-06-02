@@ -1,3 +1,4 @@
+
 #include "LedInterface.h"
 
 LedInterface::LedInterface() {
@@ -6,6 +7,7 @@ LedInterface::LedInterface() {
 
 void LedInterface::RunSetup() {
   //Serial.println("Setting neopixel to black...");
+  #ifdef HAS_NEOPIXEL_LED
   strip.setBrightness(0);
   strip.begin();
   strip.setPixelColor(0, strip.Color(0, 0, 0));
@@ -15,6 +17,7 @@ void LedInterface::RunSetup() {
   strip.setPixelColor(0, strip.Color(0, 0, 0));
   strip.show();
   this->initTime = millis();
+  #endif
 }
 
 void LedInterface::main(uint32_t currentTime) {
@@ -50,8 +53,10 @@ uint8_t LedInterface::getMode() {
 }
 
 void LedInterface::setColor(int r, int g, int b) {
+  #ifdef HAS_NEOPIXEL_LED
   strip.setPixelColor(0, strip.Color(r, g, b));
   strip.show();  
+  #endif
 }
 
 void LedInterface::sniffLed() {
@@ -67,9 +72,10 @@ void LedInterface::ledOff() {
 }
 
 void LedInterface::rainbow() {
+  #ifdef HAS_NEOPIXEL_LED
   strip.setPixelColor(0, this->Wheel((0 * 256 / 100 + this->wheel_pos) % 256));
   strip.show();
-
+  #endif
   this->current_fade_itter++;
 
   this->wheel_pos = this->wheel_pos - this->wheel_speed;
@@ -77,6 +83,7 @@ void LedInterface::rainbow() {
     this->wheel_pos = 255;
 }
 
+#ifdef HAS_NEOPIXEL_LED
 uint32_t LedInterface::Wheel(byte WheelPos) {
   WheelPos = 255 - WheelPos;
   if(WheelPos < 85) {
@@ -89,3 +96,4 @@ uint32_t LedInterface::Wheel(byte WheelPos) {
   WheelPos -= 170;
   return strip.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
 }
+#endif
